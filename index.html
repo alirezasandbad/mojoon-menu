@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>منوی آنلاین معجون علیرضا</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="header"><h1>معجون علیرضا</h1><p>لذت شما، افتخار ماست.</p></div>
+<div class="container">
+<div id="note"></div>
+<input class="search" id="q" type="search" placeholder="جست‌وجوی محصول...">
+<div class="chips" id="chips"></div>
+<div id="list"><div class="empty">در حال بارگذاری منو...</div></div>
+</div>
+<button id="top" onclick="scrollTo(0,0)">↑</button>
+<script>
+var items=[],cat='',q=document.getElementById('q');
+function fa(n){return Number(n).toLocaleString('fa-IR')}
+function el(t,c,x){var e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e}
+function render(){
+var L=document.getElementById('list'),t=q.value.trim(),cats=[],any=false;L.textContent='';
+items.forEach(function(i){if(cats.indexOf(i.cat)<0)cats.push(i.cat)});
+var C=document.getElementById('chips');C.textContent='';
+['' ].concat(cats).forEach(function(c){var b=el('button','chip'+(cat===c?' on':''),c||'همه');b.onclick=function(){cat=c;render()};C.append(b)});
+cats.forEach(function(c){
+var g=items.filter(function(i){return i.cat===c&&(!cat||cat===c)&&(!t||((i.name||'')+' '+(i.desc||'')).indexOf(t)>-1)});
+if(!g.length)return;any=true;L.append(el('div','section-title',c));
+g.forEach(function(i){
+var d=el('div','product-card'+(i.on===false?' off':''));
+if(i.img){var m=el('img','product-img');m.src=i.img;m.alt=i.name;m.loading='lazy';d.append(m)}
+var f=el('div','product-info');f.append(el('h3',null,i.name));if(i.desc)f.append(el('p',null,i.desc));d.append(f);
+d.append(i.on===false?el('div','badge','ناموجود'):el('div','product-price',fa(i.price)+' تومان'));L.append(d)})});
+if(!any)L.append(el('div','empty','محصولی پیدا نشد'))}
+q.oninput=render;
+fetch('menu.json?'+Date.now()).then(function(r){return r.json()}).then(function(d){
+items=d.items||[];
+if(d.notice&&d.notice.text){var n=el('div','note-card');n.append(el('div','note-title',d.notice.title));n.append(document.createTextNode(d.notice.text));document.getElementById('note').append(n)}
+render()}).catch(function(){document.getElementById('list').textContent='منو بارگذاری نشد. صفحه را دوباره باز کنید.'});
+addEventListener('scroll',function(){document.getElementById('top').style.display=scrollY>400?'block':'none'});
+</script>
+</body>
+</html>
